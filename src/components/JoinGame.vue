@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Player } from '../utils/model'
 import { joinGame } from '../utils/api'
 import { useRoute, useRouter } from 'vue-router'
 import { getOrCreatePlayer } from '../stores/cookies'

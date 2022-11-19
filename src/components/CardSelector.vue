@@ -31,6 +31,10 @@ function onCardSelected(event: MouseEvent) {
     }
   }
 }
+
+defineExpose({
+  clearVote
+})
 </script>
 
 <template>

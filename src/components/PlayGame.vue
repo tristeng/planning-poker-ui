@@ -7,13 +7,21 @@ import { Deck, Game, GameState, GenericMessage, MessageType, Player, PlayerState
 import CardSelector from './CardSelector.vue'
 import GameLinkShare from './GameLinkShare.vue'
 import PlayerCard from './PlayerCard.vue'
+import ObserveToggle from './ObserveToggle.vue'
+import AdminControls from './AdminControls.vue'
+import TicketLink from './TicketLink.vue'
 
 const route = useRoute()
 const router = useRouter()
 const player = ref<Player>(getOrCreatePlayer())
 const code = ref('')
 const deck = ref<Deck>(new Deck(0, []))
-const gameState = ref<GameState>(new GameState(new Game('', 0, ''), new Map<String, PlayerState>()))
+const gameState = ref(new GameState(new Game('', 0, ''), new Map<String, PlayerState>()))
+const currentTicketLink = ref('')
+const cardSelector = ref<InstanceType<typeof CardSelector> | null>(null)
+const isStarted = ref(false)
+const playerVotes = ref<Map<string, number | null> | null>(null)
+const errorMessage = ref('')
 
 let ws: WebSocket | undefined = undefined
 
@@ -23,6 +31,46 @@ const isObserving = computed(() => {
     return gameState.value.player_states[player.value.id].is_observing
   }
   return false
+})
+
+const isAdmin = computed(() => {
+  if(player.value.id in gameState.value.player_states) {
+    // @ts-expect-error
+    const playerState: PlayerState = gameState.value.player_states[player.value.id]
+    return playerState.is_admin
+  }
+  return false
+})
+
+const avgVote = computed(() => {
+  let sum = 0
+  let count = 0
+  let currVote = 0
+  if(playerVotes.value != null) {
+    for(let k in playerVotes.value) {
+      // @ts-expect-error
+      currVote = playerVotes.value[k]
+      if(currVote != null) {
+        sum += currVote
+        count++
+      }
+    }
+  }
+
+  if(count > 0) {
+    return Math.round(((sum / count) + Number.EPSILON) * 100) / 100
+  }
+
+  return null
+})
+
+const playerStateList = computed(() => {
+  const playerStates = []
+  for(const k in gameState.value.player_states) {
+    // @ts-expect-error
+    playerStates.push(gameState.value.player_states[k])
+  }
+  return playerStates
 })
 
 function onWsOpen(event: Event) {
@@ -36,7 +84,7 @@ function onWsClose(event: CloseEvent) {
 
   switch (event.code) {
     case 4000:
-      // TODO: means user tried to join a game that no longer exists - display an error message
+      errorMessage.value = `Game with code '${code.value}' no longer exists!`
       break
     case 4001:
       // means user attempted to join a game they haven't registered for yet, push them to the join page
@@ -50,7 +98,7 @@ function onWsClose(event: CloseEvent) {
 function onWsError(event: Event) {
   console.error('Encountered a WebSocket error!')
   console.error(event)
-  // TODO: display an error message
+  errorMessage.value = 'A WebSocket error occurred - please check the error log in your browser'
 }
 
 function onWsMessage(event: MessageEvent) {
@@ -79,6 +127,21 @@ function onWsMessage(event: MessageEvent) {
         deck.value.cards = resp.cards
       })
       break
+    case MessageType.RESETGAME:
+      const resetGameMsg: GenericMessage<string> = rawData
+      currentTicketLink.value = resetGameMsg.payload
+      for(let key in gameState.value.player_states) {
+        // @ts-expect-error
+        gameState.value.player_states[key].has_voted = false
+      }
+      isStarted.value = true
+      cardSelector.value?.clearVote()
+      playerVotes.value = null
+      break
+    case MessageType.REVEALGAME:
+      const revealGameMsg: GenericMessage<Map<string, number | null>> = rawData
+      playerVotes.value = revealGameMsg.payload
+      break
     default:
       console.log(data)
   }
@@ -101,7 +164,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  ws?.close(1001)
+  ws?.close(1000)
 })
 
 function onVoted(value: Number) {
@@ -127,50 +190,69 @@ function onPlayerMessage(playerMsg: GenericMessage<Player>) {
   }
 }
 
-function requestSync() {
-  const syncMsg = new GenericMessage<Number>(MessageType.SYNC, 0)
-  ws?.send(JSON.stringify(syncMsg))
-}
-
 function onObserveToggle() {
   const observeMsg = new GenericMessage<Player>(MessageType.OBSERVE, player.value)
   ws?.send(JSON.stringify(observeMsg))
 }
+
+function onReset(link: String | null) {
+  const resetMessage = new GenericMessage<String | null>(MessageType.RESET, link)
+  ws?.send(JSON.stringify(resetMessage))
+}
+
+function onReveal() {
+  const revealMsg = new GenericMessage<String>(MessageType.REVEAL, '')
+  ws?.send(JSON.stringify(revealMsg))
+}
+
+function onErrorMsgDismiss() {
+  errorMessage.value = ''
+}
 </script>
 
 <template>
-  <h2>Planning Poker Room</h2>
-  <h5>{{ gameState.game.name }} </h5>
-  <div class="container-fluid">
+  <h5>{{ gameState.game.name }} Room</h5>
+  <div class="container-fluid info-bar">
     <div class="row">
-      <div class="col d-flex justify-content-center align-items-center">
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" role="switch" id="observeToggle" @change="onObserveToggle">
-          <label class="form-check-label" for="observeToggle">Observe</label>
+      <div class="col d-flex justify-content-end align-items-center">
+        <div class="btn-group" role="group">
+          <ObserveToggle @change="onObserveToggle"/>
+          <GameLinkShare :code="code" />
         </div>
       </div>
-      <div class="col d-flex justify-content-sm-center align-items-center">
-          <button type="button" class="btn btn-primary" title="Re-sync game state with server" @click.prevent="requestSync()">
-            <i class="bi bi-arrow-repeat"></i>
-          </button>
+    </div>
+  </div>
+  <div v-if="errorMessage" class="container-fluid">
+    <div class="alert alert-danger alert-dismissible show" role="alert">
+      {{ errorMessage }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" @click="onErrorMsgDismiss"></button>
+    </div>
+  </div>
+  <div class="container-fluid info-bar">
+    <AdminControls v-if="isAdmin" @reset="onReset" @reveal="onReveal"/>
+    <TicketLink v-else :link="currentTicketLink"/>
+  </div>
+  <div v-if="avgVote" class="container-fluid">
+    <div class="row">
+      <div class="col d-flex justify-content-center align-items-center">
+      <div class="alert alert-success" role="alert">
+        <strong>Average Estimate:</strong> {{ avgVote }}
       </div>
-      <div class="col d-flex justify-content-center">
-        <GameLinkShare :code="code" />
       </div>
     </div>
   </div>
   <div class="container-fluid">
     <div class="row">
-      <PlayerCard v-for="v in gameState.player_states" :player-state="v"/>
+      <PlayerCard v-for="v in playerStateList" :player-state="v" :player-votes="playerVotes"/>
     </div>
   </div>
-  <div v-if="!isObserving" class="container-fluid">
-    <CardSelector :deck="deck" @voted="onVoted"/>
+  <div v-if="isStarted && !isObserving" class="container-fluid">
+    <CardSelector :deck="deck" @voted="onVoted" ref="cardSelector"/>
   </div>
 </template>
 
 <style scoped>
-form {
-  padding-bottom: 10px;
+form, .info-bar {
+  margin-bottom: 10px;
 }
 </style>

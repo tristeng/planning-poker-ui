@@ -1,10 +1,8 @@
 import axios from 'axios'
-import { Deck, Player, Card } from './model';
+import { Deck, Player } from './model';
 
-// TODO: can we override this?
+// in future, this should be auto-loaded during build
 const hostAndPort = '127.0.0.1:8000'
-
-// TODO check for errors on all the responses and notify the user
 
 function buildUrl(path: string, protocol: string = 'http'): string {
   return `${protocol}://${hostAndPort}/${path}`
@@ -38,7 +36,6 @@ async function fetchDeck(id: number): Promise<Deck> {
  * @returns {string} - the unique code for this game
  */
 async function createGame(gameName: string, deckId: number, player: Player): Promise<string> {
-
   // create the game
   const resp = await axios.post(buildUrl('game'), { name: gameName, deck_id: deckId})
   const code: string = resp.data.code
