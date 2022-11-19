@@ -5,7 +5,7 @@ import { Deck, Player } from './model';
 const hostAndPort = '127.0.0.1:8000'
 
 function buildUrl(path: string, protocol: string = 'http'): string {
-  return `${protocol}://${hostAndPort}/${path}`
+  return `${protocol}://${hostAndPort}/api/${path}`
 }
 
 /**
