@@ -9,10 +9,12 @@ const router = useRouter()
 const username = ref('')
 const code = ref('')
 
-function onJoin(_: Event) {
+function onJoin() {
   const player = getOrCreatePlayer(username.value)
-  joinGame(code.value, player).then(resp => console.debug(resp))
-  router.push(`/game/play/${code.value}`)
+  joinGame(code.value, player).then(resp => {
+    console.debug(resp)
+    router.push(`/game/play/${code.value}`)
+  })
 }
 
 onMounted(() => {

@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { Deck, Player } from './model';
 
-// in future, this should be auto-loaded during build
-const hostAndPort = '127.0.0.1:8000'
+// allow host and port to be overridden by an env variable
+const hostAndPort = import.meta.env.VITE_API_HOST || '127.0.0.1:8000'
 
 function buildUrl(path: string, protocol: string = 'http'): string {
   return `${protocol}://${hostAndPort}/api/${path}`
