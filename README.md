@@ -6,10 +6,13 @@ The application has no authentication or authorization, allowing any user to cre
 guests using a unique code.
 
 ## Docker
-The Docker
+To build the Docker image, update the `.env.production` environment file:
+- set `VITE_API_HOST` to the correct host and port of the API server (if running the server on the same Docker host, you 
+can leave this as is)
+- set `VITE_IS_SECURE` to 1 if you want to use secure HTTP and WS protocols (if you are running the continer behind a 
+reverse proxy configured for secure protocols, for example)
 
-To build the Docker image, update the `.env.production` environment file to specify the correct host and port for the 
-API server (if running the server on the same Docker host, you can leave this as is), and run the build command:
+and run the build command:
 ```shell
 docker build . -t planningpoker-ui
 ```

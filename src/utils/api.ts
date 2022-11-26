@@ -3,8 +3,12 @@ import { Deck, Player } from './model';
 
 // allow host and port to be overridden by an env variable
 const hostAndPort = import.meta.env.VITE_API_HOST || '127.0.0.1:8000'
+const isSecure = import.meta.env.VITE_IS_SECURE !== undefined && import.meta.env.VITE_IS_SECURE !== "0"
 
 function buildUrl(path: string, protocol: string = 'http'): string {
+  if (isSecure) {
+    protocol += 's'
+  }
   return `${protocol}://${hostAndPort}/api/${path}`
 }
 
