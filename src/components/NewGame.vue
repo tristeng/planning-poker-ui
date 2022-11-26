@@ -43,7 +43,7 @@ function onCreate() {
     <div class="mb-3">
       <label for="deck" class="form-label">Deck</label>
       <select class="form-select" aria-label="Choose Deck" v-model="deckId" id="deck">
-        <option v-for="deck in decks" :value="deck.id">{{ deck.cards.map(x => x.label).join(', ') }}</option>
+        <option v-for="deck in decks" :value="deck.id">{{ deck.name }} ({{ deck.cards.map(x => x.label).join(', ') }})</option>
       </select>
     </div>
     <div class="mb-3">

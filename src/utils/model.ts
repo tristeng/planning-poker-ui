@@ -8,8 +8,9 @@ class Card {
 }
 
 class Deck {
-  constructor(public id: Number, public cards: Array<Card>) {
+  constructor(public id: Number, public name: string, public cards: Array<Card>) {
     this.id = id
+    this.name = name
     this.cards = cards
   }
 }
