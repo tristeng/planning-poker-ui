@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getOrCreatePlayer } from '../stores/cookies'
 import { buildUrl, fetchDeck } from '../utils/api'
-import { Deck, Game, GameState, GenericMessage, MessageType, Player, PlayerState } from '../utils/model'
+import { Deck, Game, GameState, GenericMessage, MessageType, Player, PlayerState, RoundState } from '../utils/model'
 import CardSelector from './CardSelector.vue'
 import GameLinkShare from './GameLinkShare.vue'
 import PlayerCard from './PlayerCard.vue'
@@ -16,7 +16,8 @@ const router = useRouter()
 const player = ref<Player>(getOrCreatePlayer())
 const code = ref('')
 const deck = ref<Deck>(new Deck(0, "", []))
-const gameState = ref(new GameState(new Game('', 0, ''), new Map<String, PlayerState>()))
+const gameState = ref(new GameState(new Game('', 0, ''), new Map<String, PlayerState>(), '',
+    RoundState.INIT))
 const currentTicketLink = ref('')
 const cardSelector = ref<InstanceType<typeof CardSelector> | null>(null)
 const isStarted = ref(false)
@@ -87,8 +88,9 @@ function onWsClose(event: CloseEvent) {
       errorMessage.value = `Game with code '${code.value}' no longer exists!`
       break
     case 4001:
-      // means user attempted to join a game they haven't registered for yet, push them to the join page
-      router.push('/game/join')
+      // means user attempted to join a game they haven't registered for yet, push them to the join page and append the
+      // game code if there was one
+      router.push(`/game/join/${code.value}`)
       break
     default:
       console.log(`Websocket closed with code ${event.code}`)
@@ -120,12 +122,15 @@ function onWsMessage(event: MessageEvent) {
     case MessageType.STATE:
       const gameStateMsg: GenericMessage<GameState> = rawData
       gameState.value = gameStateMsg.payload
+      currentTicketLink.value = gameState.value.ticket_url
 
       // fetch the deck - all players will get an initial game state message upon connecting
       fetchDeck(gameStateMsg.payload.game.deck_id).then(resp => {
         deck.value.id = gameStateMsg.payload.game.deck_id
         deck.value.cards = resp.cards
       })
+
+      isStarted.value = gameStateMsg.payload.round_state != RoundState.INIT;
       break
     case MessageType.RESETGAME:
       const resetGameMsg: GenericMessage<string> = rawData
