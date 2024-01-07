@@ -41,10 +41,21 @@ class PlayerState {
   }
 }
 
+enum RoundState {
+  INIT = "INIT",  // initial state - no votes have been cast
+  VOTING = "VOTING",  // players are voting
+  REVEALED = "REVEALED",  // votes have been revealed
+}
+
+type RoundStateStrings = keyof typeof RoundState
+
 class GameState {
-  constructor(public game: Game, public player_states: Map<String, PlayerState>) {
+  constructor(public game: Game, public player_states: Map<String, PlayerState>, public ticket_url: string,
+              public round_state: RoundStateStrings) {
     this.game = game
     this.player_states = player_states
+    this.ticket_url = ticket_url
+    this.round_state = round_state
   }
 }
 
@@ -79,4 +90,4 @@ class GenericMessage<Payload> {
   }
 }
 
-export { Card, Deck, Player, Game, PlayerState, GameState, MessageType, GenericMessage }
+export { Card, Deck, Player, Game, PlayerState, GameState, MessageType, GenericMessage, RoundState }
