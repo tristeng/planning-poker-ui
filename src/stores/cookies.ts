@@ -47,4 +47,4 @@ function getGameCode(): string {
   return ''
 }
 
-export { getOrCreatePlayer, setGameCode, getGameCode }
+export { getOrCreatePlayer, setGameCode, getGameCode, cookies }
