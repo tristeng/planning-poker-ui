@@ -4,7 +4,7 @@ import { describe, expect, it} from 'vitest';
 
 describe('Home.vue tests', () => {
   it('renders correctly', () => {
-    const wrapper = shallowMount(Home);
+    const wrapper = shallowMount(Home, { stubs: ['router-link'] });
     expect(wrapper.exists()).toBe(true);
 
     expect(wrapper.get('h1')).toBeTruthy();
