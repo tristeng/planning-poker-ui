@@ -1,4 +1,6 @@
 # Planning Poker UI
+![Unit Tests](https://github.com/tristeng/planning-poker-ui/actions/workflows/node.js.yml/badge.svg)
+
 This project is a minimalist poker planning web application frontend. The companion backend application can be found
 [here](https://github.com/tristeng/planning-poker).
 
