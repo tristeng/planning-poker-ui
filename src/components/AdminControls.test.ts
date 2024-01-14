@@ -1,6 +1,4 @@
-// @ts-expect-error
 import { mount } from '@vue/test-utils';
-// @ts-expect-error
 import AdminControls from './AdminControls.vue';
 import { describe, expect, it } from 'vitest';
 
