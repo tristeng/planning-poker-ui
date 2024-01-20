@@ -3,21 +3,21 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getOrCreatePlayer } from '../stores/cookies'
 import { buildUrl, fetchDeck } from '../utils/api'
-import { Deck, Game, GameState, GenericMessage, MessageType, Player, PlayerState, RoundState } from '../utils/model'
+import { Deck, Game, GameState, GenericMessage, MessageType, Player, PlayerState, RoundState, GameSettings } from '../utils/model'
 import CardSelector from './CardSelector.vue'
 import GameLinkShare from './GameLinkShare.vue'
 import PlayerCard from './PlayerCard.vue'
 import ObserveToggle from './ObserveToggle.vue'
 import AdminControls from './AdminControls.vue'
 import TicketLink from './TicketLink.vue'
+import RoundTimer from './RoundTimer.vue'
 
 const route = useRoute()
 const router = useRouter()
 const player = ref<Player>(getOrCreatePlayer())
 const code = ref('')
 const deck = ref<Deck>(new Deck(0, "", []))
-const gameState = ref(new GameState(new Game('', 0, ''), new Map<String, PlayerState>(), '',
-    RoundState.INIT))
+const gameState = ref(new GameState(new Game('', 0, '', new GameSettings()), new Map<String, PlayerState>(), '', RoundState.INIT, undefined))
 const currentTicketLink = ref('')
 const cardSelector = ref<InstanceType<typeof CardSelector> | null>(null)
 const isStarted = ref(false)
@@ -72,6 +72,10 @@ const playerStateList = computed(() => {
     playerStates.push(gameState.value.player_states[k])
   }
   return playerStates
+})
+
+const showTimer = computed<boolean>(() => {
+    return gameState.value.round_state === RoundState.VOTING && gameState.value.game.game_settings.round_timer_settings !== undefined
 })
 
 function onWsOpen(event: Event) {
@@ -142,10 +146,13 @@ function onWsMessage(event: MessageEvent) {
       isStarted.value = true
       cardSelector.value?.clearVote()
       playerVotes.value = null
+      gameState.value.round_start = new Date().toISOString()  // reset the round start time
+      gameState.value.round_state = RoundState.VOTING
       break
     case MessageType.REVEALGAME:
       const revealGameMsg: GenericMessage<Map<string, number | null>> = rawData
       playerVotes.value = revealGameMsg.payload
+      gameState.value.round_state = RoundState.REVEALED
       break
     default:
       console.log(data)
@@ -253,6 +260,9 @@ function onErrorMsgDismiss() {
   </div>
   <div v-if="isStarted && !isObserving" class="container-fluid">
     <CardSelector :deck="deck" @voted="onVoted" ref="cardSelector"/>
+  </div>
+  <div v-if="showTimer" class="container-fluid">
+    <RoundTimer :gameState="gameState"/>
   </div>
 </template>
 

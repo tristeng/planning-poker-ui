@@ -22,11 +22,28 @@ class Player {
   }
 }
 
+
+class RoundTimerSettings {
+  constructor(public maximum: number = 5, public warning: number = 4) {
+    this.maximum = maximum
+    this.warning = warning
+  }
+}
+
+
+class GameSettings {
+  constructor(public round_timer_settings: RoundTimerSettings | undefined = undefined) {
+    this.round_timer_settings = round_timer_settings
+  }
+}
+
+
 class Game {
-  constructor(public name: string, public deck_id: number, public code: string) {
+  constructor(public name: string, public deck_id: number, public code: string, public game_settings: GameSettings) {
     this.name = name
     this.deck_id = deck_id
     this.code = code
+    this.game_settings = game_settings
   }
 }
 
@@ -51,11 +68,12 @@ type RoundStateStrings = keyof typeof RoundState
 
 class GameState {
   constructor(public game: Game, public player_states: Map<String, PlayerState>, public ticket_url: string,
-              public round_state: RoundStateStrings) {
+              public round_state: RoundStateStrings, public round_start: string | undefined) {
     this.game = game
     this.player_states = player_states
     this.ticket_url = ticket_url
     this.round_state = round_state
+    this.round_start = round_start  // only required if a user joins mid round
   }
 }
 
@@ -90,4 +108,4 @@ class GenericMessage<Payload> {
   }
 }
 
-export { Card, Deck, Player, Game, PlayerState, GameState, MessageType, GenericMessage, RoundState }
+export { Card, Deck, Player, Game, PlayerState, GameState, MessageType, GenericMessage, RoundState, RoundTimerSettings, GameSettings }
