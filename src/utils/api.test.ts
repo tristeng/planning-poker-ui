@@ -2,7 +2,7 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { describe, expect, it, afterEach } from 'vitest';
 import { buildUrl, fetchDecks, fetchDeck, createGame, joinGame } from './api';
-import { Deck, Player } from './model';
+import { Deck, Player, RoundTimerSettings } from './model';
 
 const mock = new MockAdapter(axios);
 
@@ -41,7 +41,7 @@ describe('API utility functions', () => {
     mock.onPost('http://127.0.0.1:8000/api/game').reply(200, { code: gameCode });
     mock.onPost(`http://127.0.0.1:8000/api/join/${gameCode}`).reply(200, player);
 
-    const result = await createGame(gameName, deckId, player);
+    const result = await createGame(gameName, deckId, player, new RoundTimerSettings());
     expect(result).toEqual(gameCode);
   });
 

@@ -1,4 +1,4 @@
-import { Card, Deck, Player, Game, PlayerState, GameState, MessageType, GenericMessage, RoundState } from './model';
+import { Card, Deck, Player, Game, PlayerState, GameState, GenericMessage, GameSettings } from './model';
 import { describe, expect, it } from 'vitest';
 
 describe('model.ts', () => {
@@ -36,7 +36,7 @@ describe('model.ts', () => {
 
     describe('Game', () => {
         it('should create a new Game instance', () => {
-            const game = new Game('Poker', 1, 'ABC');
+            const game = new Game('Poker', 1, 'ABC', new GameSettings());
             expect(game.name).toBe('Poker');
             expect(game.deck_id).toBe(1);
             expect(game.code).toBe('ABC');
@@ -57,15 +57,16 @@ describe('model.ts', () => {
 
     describe('GameState', () => {
         it('should create a new GameState instance', () => {
-            const game = new Game('Poker', 1, 'ABC');
+            const game = new Game('Poker', 1, 'ABC', new GameSettings());
             const playerStates = new Map<string, PlayerState>();
             const ticketUrl = 'https://example.com';
             const roundState = 'INIT';
-            const gameState = new GameState(game, playerStates, ticketUrl, roundState);
+            const gameState = new GameState(game, playerStates, ticketUrl, roundState, undefined);
             expect(gameState.game).toBe(game);
             expect(gameState.player_states).toBe(playerStates);
             expect(gameState.ticket_url).toBe(ticketUrl);
             expect(gameState.round_state).toBe(roundState);
+            expect(gameState.game.game_settings.round_timer_settings).toBe(undefined);
         });
     });
 
