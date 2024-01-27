@@ -8,6 +8,7 @@ const props = defineProps({
 
 const elapsedMS = ref(0)  // elapsed time in milliseconds
 const timer = ref(0)  // handle to the timer callback
+const roundStart = ref(Date.now())  // time the round started
 
 // convert from minutes to milliseconds
 const maximum = props.gameState.game.game_settings.round_timer_settings !== undefined ? props.gameState.game.game_settings.round_timer_settings.maximum * 60 * 1000 : 0
@@ -57,12 +58,15 @@ const countdownValue = computed<string>(() => {
 onMounted(() => {
     if(props.gameState.game.game_settings.round_timer_settings !== undefined) {
         if(props.gameState.round_start !== undefined) {
-            elapsedMS.value = Date.now() - Date.parse(props.gameState.round_start)
+            roundStart.value = Date.parse(props.gameState.round_start)
+            elapsedMS.value = Date.now() - roundStart.value
+        } else {
+            roundStart.value = Date.now()
         }
 
         // start the timer
         timer.value = setInterval(() => {
-            elapsedMS.value += 1000
+            elapsedMS.value = Date.now() - roundStart.value
         }, 1000)
     }
 })
