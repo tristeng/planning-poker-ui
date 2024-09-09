@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Planning Poker</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg bg-light">
+    <nav class="navbar navbar-expand-lg">
       <div class="container-fluid">
         <a class="navbar-brand" href="/">Planning Poker</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,13 @@
               <a class="nav-link" href="/game/join">Join Game</a>
             </li>
           </ul>
+        </div>
+        <div>
+          <span><i class="bi bi-sun-fill"></i></span>
+          <span><i class="bi bi-moon-fill"></i></span>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle">
+          </div>
         </div>
       </div>
     </nav>

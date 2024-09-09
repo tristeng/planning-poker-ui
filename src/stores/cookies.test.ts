@@ -1,4 +1,4 @@
-import { getOrCreatePlayer, setGameCode, getGameCode, cookies } from './cookies'
+import { getOrCreatePlayer, setGameCode, getGameCode, setTheme, getTheme, cookies } from './cookies'
 import { Player } from '../utils/model'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -83,6 +83,43 @@ describe('cookies', () => {
             const gameCode: string = getGameCode()
             expect(gameCode).toBe('')
             expect(isKeySpy).toHaveBeenCalledWith('gameCode')
+            expect(getSpy).not.toHaveBeenCalled()
+        })
+    })
+
+    describe('setTheme', () => {
+        it('should set the theme as a cookie parameter', () => {
+            const setSpy = vi.spyOn(cookies, 'set')
+
+            setTheme('dark')
+            expect(setSpy).toHaveBeenCalledWith('theme', 'dark')
+        })
+
+        it('should throw an error if the theme is not light or dark', () => {
+            expect(() => {
+                setTheme('invalid-theme')
+            }).toThrowError('Invalid theme - must be either light or dark')
+        })
+    })
+
+    describe('getTheme', () => {
+        it('should fetch the current theme from the cookie store', () => {
+            const isKeySpy = vi.spyOn(cookies, 'isKey').mockReturnValue(true)
+            const getSpy = vi.spyOn(cookies, 'get').mockReturnValue('dark')
+
+            const theme: string = getTheme()
+            expect(theme).toBe('dark')
+            expect(isKeySpy).toHaveBeenCalledWith('theme')
+            expect(getSpy).toHaveBeenCalledWith('theme')
+        })
+
+        it('should return an empty string if no theme exists in the cookie store', () => {
+            const isKeySpy = vi.spyOn(cookies, 'isKey').mockReturnValue(false)
+            const getSpy = vi.spyOn(cookies, 'get')
+
+            const theme: string = getTheme()
+            expect(theme).toBe('')
+            expect(isKeySpy).toHaveBeenCalledWith('theme')
             expect(getSpy).not.toHaveBeenCalled()
         })
     })

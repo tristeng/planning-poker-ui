@@ -47,4 +47,27 @@ function getGameCode(): string {
   return ''
 }
 
-export { getOrCreatePlayer, setGameCode, getGameCode, cookies }
+/**
+ * Sets the theme
+ * @param theme - the theme to set
+ */
+function setTheme(theme: string) {
+  // throw an error if its not either light or dark
+  if(theme !== 'light' && theme !== 'dark') {
+    throw new Error('Invalid theme - must be either light or dark')
+  }
+  cookies.set('theme', theme)
+}
+
+/**
+ * Fetches the current theme
+ * @returns the current theme or an empty string if none exists
+ */
+function getTheme(): string {
+  if(cookies.isKey('theme')) {
+    return cookies.get('theme')
+  }
+  return ''
+}
+
+export { getOrCreatePlayer, setGameCode, getGameCode, setTheme, getTheme, cookies }
