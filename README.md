@@ -16,7 +16,7 @@ The project supports [Visual Studio Code Dev Containers](https://code.visualstud
 ### Dev Server
 To start the dev server:
 ```shell
-yarn dev
+yarn dev --host
 ```
 
 ### Building
@@ -28,7 +28,7 @@ yarn build
 ### Previewing the Build
 To locally preview production build:
 ```shell
-yarn preview
+yarn preview --host
 ```
 
 ### Unit Tests

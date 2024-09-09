@@ -12,7 +12,7 @@ const connectedClass = computed(() => {
 })
 
 const votedClass = computed(() => {
-  return props.playerState.has_voted ? 'bi bi-question-circle-fill text-success' : 'bi bi-question-circle-fill text-warning'
+  return props.playerState.has_voted ? 'bi bi-check-circle-fill text-success' : 'bi bi-question-circle-fill text-warning'
 })
 
 const voteValue = computed(() => {
