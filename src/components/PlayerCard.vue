@@ -47,6 +47,7 @@ const voteValue = computed(() => {
 <style scoped>
 .player-card {
   max-width: 150px;
+  margin-top: 0.5rem;
 }
 .card-text i, .card-text span {
   font-size: 3rem;
